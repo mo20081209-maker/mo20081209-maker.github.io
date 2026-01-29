@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自动答题助手 - 带Base64解密的网页自动答题工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        :root {
+            --primary: #2196F3;
+            --primary-dark: #0D47A1;
+            --success: #4CAF50;
+            --warning: #FF9800;
+            --danger: #e53e3e;
+            --light: #f5f7fa;
+            --dark: #1e1e2f;
+            --gray: #718096;
+            --gray-light: #e2e8f0;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.15);
+            --radius: 8px;
+            --transition: all 0.3s ease;
+        }
+        body {
+            background-color: #f9fafb;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        a {
+            text-decoration: none;
+            color: var(--primary);
+            transition: var(--transition);
+        }
+        a:hover {
+            color: var(--primary-dark);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        /* 导航栏 */
+        header {
+            background-color: #fff;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 70px;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 20px;
+            color: var(--primary-dark);
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        .nav-links a {
+            font-weight: 500;
+            font-size: 16px;
+        }
+        .hamburger {
+            display: none;
+            font-size: 24px;
+            color: var(--dark);
+            cursor: pointer;
+        }
+        /* 英雄区 */
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+            background: linear-gradient(135deg, #f0f8fb 0%, #e6f7ff 100%);
+            margin-bottom: 60px;
+            border-radius: 0 0 50px 50px;
+        }
+        .hero h1 {
+            font-size: 36px;
+            margin-bottom: 20px;
+            color: var(--primary-dark);
+            line-height: 1.3;
+        }
+        .hero p {
+            font-size: 18px;
+            color: var(--gray);
+            max-width: 800px;
+            margin: 0 auto 40px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            color: #fff;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            margin-left: 20px;
+        }
+        .btn-outline:hover {
+            background: var(--primary);
+            color: #fff;
+        }
+        /* 功能亮点 */
+        .section {
+            padding: 60px 0;
+        }
+        .section-title {
+            text-align: center;
+            font-size: 30px;
+            margin-bottom: 60px;
+            color: var(--primary-dark);
+            position: relative;
+        }
+        .section-title::after {
+            content: "";
+            width: 80px;
+            height: 4px;
+            background: var(--primary);
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+        .feature-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(33, 150, 243, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: var(--dark);
+        }
+        .feature-card p {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        /* 使用教程 */
+        .tutorial {
+            background: #fff;
+            padding: 60px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .tutorial-step {
+            margin-bottom: 40px;
+        }
+        .tutorial-step:last-child {
+            margin-bottom: 0;
+        }
+        .tutorial-step h4 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tutorial-step h4 span {
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .tutorial-step p {
+            color: var(--gray);
+            margin-left: 40px;
+        }
+        /* 代码获取 */
+        .code-section {
+            background: var(--dark);
+            color: #fff;
+            border-radius: var(--radius);
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            margin: 0 auto;
+            max-width: 1100px;
+        }
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+        .code-header h3 {
+            font-size: 18px;
+            color: var(--primary);
+        }
+        #copy-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        #copy-btn:hover {
+            background: var(--primary-dark);
+        }
+        .code-box {
+            background: #121212;
+            padding: 20px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #ccc;
+            max-height: 400px;
+        }
+        /* 注意事项 */
+        .notice {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid var(--warning);
+            padding: 20px;
+            margin: 30px auto 0;
+            max-width: 1000px;
+            border-radius: 0 var(--radius) var(--radius) 0;
+        }
+        .notice h4 {
+            color: var(--warning);
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .notice p {
+            color: var(--dark);
+            font-size: 14px;
+        }
+        /* 页脚 */
+        footer {
+            background: var(--dark);
+            color: #ccc;
+            padding: 50px 0 20px;
+            margin-top: 80px;
+        }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 20px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+        .footer-logo .logo-icon {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        }
+        .footer-desc {
+            max-width: 400px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .footer-links h4 {
+            color: #fff;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .footer-links ul {
+            list-style: none;
+        }
+        .footer-links ul li {
+            margin-bottom: 10px;
+        }
+        .footer-links ul li a {
+            color: #ccc;
+        }
+        .footer-links ul li a:hover {
+            color: var(--primary);
+        }
+        .copyright {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #333;
+            font-size: 14px;
+        }
+        /* 响应式适配 */
+        @media (max-width: 992px) {
+            .features {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .hero h1 {
+                font-size: 30px;
+            }
+            .section-title {
+                font-size: 26px;
+            }
+        }
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            .hamburger {
+                display: block;
+            }
+            .hero {
+                padding: 60px 0;
+            }
+            .hero h1 {
+                font-size: 24px;
+            }
+            .hero p {
+                font-size: 16px;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+            .section {
+                padding: 40px 0;
+            }
+            .section-title {
+                font-size: 22px;
+                margin-bottom: 40px;
+            }
+            .tutorial {
+                padding: 30px 20px;
+            }
+            .tutorial-step p {
+                margin-left: 0;
+            }
+            .footer-content {
+                flex-direction: column;
+            }
+        }
+        @media (max-width: 576px) {
+            .hero .btn-group {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            .btn-outline {
+                margin-left: 0;
+            }
+            .code-section {
+                padding: 20px;
+            }
+        }
+    </style>
+    <script src="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <header>
+        <div class="container nav">
+            <div class="logo">
+                <div class="logo-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                自动答题助手
+            </div>
+            <div class="nav-links">
+                <a href="#features">功能亮点</a>
+                <a href="#tutorial">使用教程</a>
+                <a href="#code">获取代码</a>
+                <a href="#notice">注意事项</a>
+            </div>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区 -->
+    <section class="hero">
+        <div class="container">
+            <h1>网页自动答题助手 · 带Base64解密功能</h1>
+            <p>纯原生JS开发，无需安装插件，支持自动识别输入框、填充答案、自动提交、Base64解密，适配各类网页答题场景，可拖拽缩放面板，操作简单高效</p>
+            <div class="btn-group">
+                <a href="#code" class="btn"><i class="fas fa-code"></i> 立即获取代码</a>
+                <a href="#tutorial" class="btn btn-outline"><i class="fas fa-book"></i> 查看使用教程</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 功能亮点 -->
+    <section class="section container" id="features">
+        <h2 class="section-title">核心功能亮点</h2>
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-unlock"></i>
+                </div>
+                <h3>Base64自动解密</h3>
+                <p>自动识别Base64格式的题目/答案，一键解密，支持中文、特殊字符解密，解密失败自动返回原内容，兼容性强</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-mouse-pointer"></i>
+                </div>
+                <h3>可视化控制面板</h3>
+                <p>可拖拽、缩放、最小化面板，支持夜间模式、置顶锁定、透明度调节，实时展示答题进度，操作状态可视化</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h3>自动识别提交</h3>
+                <p>智能识别网页可输入元素，模拟键盘输入答案，支持回车/提交按钮双方式提交，失败自动重试，可配置重试次数</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-plug"></i>
+                </div>
+                <h3>接口自动拦截</h3>
+                <p>自动拦截网页API请求，解析答题题库数据，无需手动导入，题库加载后自动解密，一键开始答题</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+                <h3>快捷按键操作</h3>
+                <p>支持Alt+V显隐面板、Alt+A启停答题、Alt+N下一题、Alt+R重置位置，无需鼠标，操作更高效</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-save"></i>
+                </div>
+                <h3>本地配置保存</h3>
+                <p>面板位置、尺寸、主题、延迟、重试次数等配置自动保存到本地，刷新页面不丢失，下次使用直接复用</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用教程 -->
+    <section class="section container" id="tutorial">
+        <h2 class="section-title">快速使用教程</h2>
+        <div class="tutorial">
+            <div class="tutorial-step">
+                <h4><span>1</span>打开答题网页并准备工具</h4>
+                <p>打开需要答题的网页，确保答题界面已加载完成，同时在本网站复制【自动答题助手】完整代码</p>
+            </div>
+            <div class="tutorial-step">
+                <h4><span>2</span>打开浏览器开发者工具</h4>
+                <p>在答题网页中，按键盘F12键打开浏览器开发者工具，切换到「Console（控制台）」面板</p>
+            </div>
+            <div class="tutorial-step">
+                <h4><span>3</span>粘贴代码并执行</h4>
+                <p>将复制的助手代码粘贴到控制台输入框中，按回车键执行，页面会自动生成可视化控制面板</p>
+            </div>
+            <div class="tutorial-step">
+                <h4><span>4</span>配置工具并启用解密</h4>
+                <p>在控制面板中，开启「Base64解密」开关，配置答题延迟、最大重试次数，面板可拖拽到任意位置</p>
+            </div>
+            <div class="tutorial-step">
+                <h4><span>5</span>开始自动答题</h4>
+                <p>点击面板中的「自动答题」按钮，工具会自动拦截题库、解密内容、填充答案并提交，实时展示答题进度</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 代码获取 -->
+    <section class="section container" id="code">
+        <h2 class="section-title">获取完整代码</h2>
+        <div class="code-section">
+            <div class="code-header">
+                <h3>自动答题助手（带Base64解密）- 纯原生JS代码</h3>
+                <button id="copy-btn"><i class="fas fa-copy"></i> 一键复制代码</button>
+            </div>
+            <div class="code-box" id="code-content">
+// 此处为自动答题助手完整代码（带Base64解密）
+// 请替换为之前的完整JS代码
+(function() {
+    'use strict';
+    const CONFIG = {
+        defaultDelay: 0,
+        version: '1.0',
+        panelBaseSize: 360,
+        panelMinSize: 300,
+        panelMaxSize: 500,
+        inputSelectors: [
+            'input[type="text"]:not([disabled])',
+            'textarea:not([disabled])',
+            'input:not([type="hidden"]):not([type="password"]):not([disabled])',
+            '[contenteditable="true"]:not([disabled])'
+        ],
+        submitKeywords: ['提交', 'submit', '确认', 'next', '检查', 'check', '下一步', '继续'],
+        retryInterval: 300,
+        storageKey: 'autoAnswerHelper_v1.0',
+        theme: {
+            light: {
+                panelBg: 'rgba(255, 255, 255, 0.98)',
+                border: '#2196F3',
+                text: '#2d3748',
+                lightText: '#718096',
+                cardBg: '#f0f8fb',
+                success: '#4CAF50',
+                warning: '#FF9800',
+                danger: '#e53e3e',
+                highlight: '#2196F3'
+            },
+            dark: {
+                panelBg: 'rgba(30, 30, 40, 0.98)',
+                border: '#444',
+                text: '#e0e0e0',
+                lightText: '#aaa',
+                cardBg: 'rgba(40, 40, 50, 0.8)',
+                highlight: '#64B5F6',
+                success: '#4CAF50',
+                warning: '#FF9800',
+                danger: '#ef5350'
+            }
+        }
+    };
+    // 以下为完整代码（省略，替换为实际代码即可）
+})();
+            </div>
+        </div>
+    </section>
+
+    <!-- 注意事项 -->
+    <section class="container" id="notice">
+        <div class="notice">
+            <h4><i class="fas fa-exclamation-triangle"></i> 重要注意事项</h4>
+            <p>1. 本工具仅用于学习、测试场景，请勿用于违规答题、刷分等行为，遵守网站使用协议，否则后果自负；</p>
+            <p>2. 部分网页存在反爬/反模拟操作机制（如验证码、事件校验、接口加密），本工具可能无法适配；</p>
+            <p>3. 工具基于浏览器原生JS开发，模拟操作的事件isTrusted=false，部分严格的网页会拦截该类操作；</p>
+            <p>4. 本工具无任何后台服务，所有操作均在本地浏览器完成，不会收集任何用户数据，可放心使用；</p>
+            <p>5. 如遇使用问题，请检查代码是否完整复制、浏览器控制台是否有报错，建议使用Chrome/Edge最新版浏览器。</p>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="footer-logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        自动答题助手
+                    </div>
+                    <p class="footer-desc">纯原生JS开发的网页自动答题工具，支持Base64解密、自动识别提交、可视化面板，适配各类网页答题场景，仅用于学习测试，请勿违规使用。</p>
+                </div>
+                <div class="footer-links">
+                    <h4>快速导航</h4>
+                    <ul>
+                        <li><a href="#features">功能亮点</a></li>
+                        <li><a href="#tutorial">使用教程</a></li>
+                        <li><a href="#code">获取代码</a></li>
+                        <li><a href="#notice">注意事项</a></li>
+                    </ul>
+                </div>
+                <div class="footer-links">
+                    <h4>工具说明</h4>
+                    <ul>
+                        <li><a href="#">浏览器兼容</a></li>
+                        <li><a href="#">常见问题</a></li>
+                        <li><a href="#">更新日志</a></li>
+                        <li><a href="#">开发说明</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                © 2025 自动答题助手 | 本工具仅用于学习测试，请勿违规使用
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 代码复制功能
+        const copyBtn = document.getElementById('copy-btn');
+        const codeContent = document.getElementById('code-content');
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(codeContent.textContent).then(() => {
+                copyBtn.textContent = '✓ 复制成功';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 一键复制代码';
+                }, 2000);
+            }).catch(() => {
+                copyBtn.textContent = '✗ 复制失败';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="fas fa-copy"></i> 一键复制代码';
+                }, 2000);
+            });
+        });
+
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.style.background = '#fff';
+                header.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+            } else {
+                header.style.background = '#fff';
+                header.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+            }
+        });
+    </script>
+</body>
+</html>
